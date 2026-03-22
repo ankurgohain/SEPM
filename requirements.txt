@@ -1,0 +1,46 @@
+# ML
+tensorflow
+scikit-learn
+numpy
+pandas
+matplotlib
+seaborn
+joblib
+tensorboard
+
+# Data pipeline
+kafka-python
+pydantic
+python-dotenv
+pyyaml
+
+# api
+fastapi
+uvicorn
+httpx
+python-multipart
+
+# async + db
+sqlalchemy
+psycopg2-binary
+asyncpg
+alembic
+
+# BG tasks
+redis
+celery
+flower
+
+# aws
+boto3
+
+# mlops
+mlflow
+
+# test
+pytest
+black
+flake8
+
+# deploy
+gunicorn
