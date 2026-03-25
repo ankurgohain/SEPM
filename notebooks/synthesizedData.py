@@ -1,15 +1,14 @@
 import numpy as np 
 import pandas as pd 
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error, roc_auc_score, classification_report
-import tensorflow as tf
-import typing
-from keras._tf_keras import keras
-from keras import layers, Model, callbacks
-import warnings
-warnings.filterwarnings("ignore")
+# from sklearn.model_selection import train_test_split
+# from sklearn.metrics import mean_squared_error, roc_auc_score, classification_report
+# import tensorflow as tf
+# from keras._tf_keras import keras
+# from keras import layers, Model, callbacks
+# import warnings
+# warnings.filterwarnings("ignore")
 
 class LearnerDataGenerator:
 
@@ -28,6 +27,7 @@ class LearnerDataGenerator:
         return ability, risk
 
     def generate(self) -> tuple[np.ndarray, np.ndarray, np.ndarray, pd.DataFrame]:
+        print("Starting data generation...")
         records = []
         all_num, all_cat, all_y = [], [], []
 
@@ -39,7 +39,7 @@ class LearnerDataGenerator:
 
             for t in range(self.seq_len):
                 quiz = np.clip( ability * 80 + np.random.normal(0,12) + t *ability *1.5, 10, 100)
-                engagement = np.clip(ability *0.8 + np.random.nomral(0, 0.12), 0.05, 1)
+                engagement = np.clip(ability *0.8 + np.random.normal(0, 0.12), 0.05, 1)
                 hints = int(np.clip(np.random.poisson((1-ability) *5), 0, 10))
                 duration = np.clip(np.random.normal(40 + ability* 30, 10), 5, 120)
                 correct = int(np.clip(np.random.poisson(ability*15),0,20))
@@ -63,7 +63,7 @@ class LearnerDataGenerator:
                     })
         
                 last_scores = [r[0] for r in seq_num[-3:]]
-                pef_score = float(np.mean(last_scores) +np.random.nomral(0,3))
+                perf_score = float(np.mean(last_scores) +np.random.normal(0,3))
                 perf_score = float(np.clip(perf_score,0,100))
                 mastery = int(ability>0.55 and np.mean(last_scores)>65)
                 dropout = int(base_risk>0.55 and np.mean([r[1] for r in seq_num[-3:]]) < 0.4)
@@ -82,6 +82,11 @@ class LearnerDataGenerator:
         X_nnum = flat_scaled.reshape(N,T,F).astype(np.float32)
     
         raw_df = pd.DataFrame(records)
-        raw_df.to_csv('../../data/raw/learner_data.csv', index=False)
+        print(f"DataFrame created with {len(records)} records.")
+        print("Attempting to save CSV...")
+        raw_df.to_csv('C:/Users/Asus/projects/lstm-learner-progression/data/raw/learner_data.csv', index=False)
+        print ("CSV saved. Printing other outputs...")
+
         print (X_num, X_cat, y, raw_df, scaler)
     
+LearnerDataGenerator().generate()
