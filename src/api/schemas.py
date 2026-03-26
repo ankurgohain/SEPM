@@ -34,6 +34,7 @@ class LearnerSession(BaseModel):
     module_id: ModuleID = Field(..., description="Module ID for the session")
 
     model_config = {"use_enum_values": True}
+    
 
 class PredictRequest(BaseModel):
     """

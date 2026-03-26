@@ -36,10 +36,7 @@ def objective(trial, splits: dict) -> float:
     except ImportError as e:
         raise ImportError(f"optuna and tensorflow are required: {e}")
 
-    import sys
-    from pathlib import Path
-    sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-    from lstm_model import build_lstm_model
+    from src.models.lstm import build_lstm_model
 
     lstm1    = trial.suggest_categorical("lstm_units_1",  [64, 128, 256])
     lstm2    = trial.suggest_categorical("lstm_units_2",  [32, 64, 128])

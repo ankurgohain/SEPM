@@ -1,7 +1,7 @@
 from __future__ import annotations
 import os 
 from dataclasses import dataclass, field, fields
-from pathlib import Path, pathlib
+from pathlib import Path
 from typing import Any
 _ENV_FILE = Path(__file__).parent.parent.parent / ".env"
 if _ENV_FILE.exists():
@@ -18,7 +18,7 @@ def _env(key:str, default: Any, cast: callable):
         return default
     try:
         if cast is bool:
-            return value.lower() in ("1", "true", "yes", "on")
+            return value in ("1", "true", "yes", "on")
         return cast(value)
     except (ValueError, TypeError):
         return default
@@ -52,7 +52,7 @@ class PathConfig:
         for f in fields(self):
             p = getattr(self, f.name)
             if isinstance(p, Path) and f.name != "root":
-                p.mkdir(parents=True, exiss_ok = True)
+                p.mkdir(parents=True, exist_ok=True)
 
 
 @dataclass(frozen=True)
@@ -135,6 +135,76 @@ class TrainingConfig:
     seed:int=_env("TRAIN_SEED",42,int)
 
 @dataclass(frozen=True)
-class InferenveConfig:
+class InferenceConfig:
     risk_threshold_high:float=_env("INF_RISK_HIGH",0.65,float)
+    risk_threshold_medium:float=_env("INF_RISK_MEDIUM",0.40,float)
+    mastery_threshold_low:float=_env("INF_MASTERY_LOW",0.30,float)
+    mastery_threshold_high:float=_env("INF_MASTERY_HIGH",0.75,float)
+    perf_threshold_low:float=_env("INF_PERF_LOW",60.0,float)
+    batch_size:int=_env("INF_BATCH_SIZE",256, int)
+    max_workers:int=_env("INF_MAX_WORKERS",4,int)
+    cache_ttl_seconds:int=_env("INF_CACHE_TTL",300,int)
+    use_onnx:bool=_env("INF_USE_ONNX",False,bool)
+    onnx_providers:tuple=("CPUExecutionProvider",)
+
+
+@dataclass(frozen=True)
+class InterventionConfig:
+    alert_dropout_threshold:float=_env("IV_ALERT_DROPOUT",0.65,float)
+    remedial_mastery_threshold:float=_env("IV_REMEDIAL_MASTERY",0.40,float)
+    remedial_perf_threshold:float=_env("IV_REMEDIAL_PERF",60.0,float)
+    nudge_dropout_threshold:float=_env("IV_NUDGE_DROPOUT", 0.40, float)
+    badge_mastery_threshold:float=_env("IV_BADGE_MASTERY",0.75,float)
+
+    cooldown_sec:int=_env("IV_COOLDOWN_SEC", 3600, int)
+    email_enabled:bool=_env("IV_EMAIL_ENABLED",False, bool)
+    webhook_enabled:bool=_env("IV_WEBHOOK_ENABLED",False,bool)
+    webhook_url: str=_env("IV_WEBHOOK_URL","", str)
+
+    badge_xp:int=_env("IV_BADGE_XP",100, int)
+    badge_names:tuple=("Quick Learner", "Consistent Performer", "Deep THinker", "Module Master", "Streak Champion", "Top Performer")
+
+@dataclass(frozen=True)
+class APIConfig:
+    host: str=_env("API_HOST","0.0.0.0",str)
+    port: int=_env("API_PORT",8000,int)
+    reload: bool=_env("API_RELOAD",False,bool)
+    workers: int = _env("API_WORKERS",1,int)
+    log_level: str=_env("LOG_LEVEL","INFO",str)
+    api_key: str=_env("LEARNFLOW_API_KEY", "dev-key", str)
+    rate_limit_rpm:int= _env("RATE_LIMIT_RPM", 60, int)
+    cors_original: str=_env("CORS_ORIGINS", "*", str)
     
+    
+@dataclass(frozen=True)
+class LearnFlowConfig:
+    """
+        Top-level config object.  Import and use as:
+ 
+        from configs.config import cfg
+        cfg.model.lstm_units_1        # → 128
+        cfg.training.epochs           # → 60
+        cfg.inference.risk_threshold_high  # → 0.65
+    """
+    paths:        PathConfig        = field(default_factory=PathConfig)
+    data:         DataConfig        = field(default_factory=DataConfig)
+    model:        ModelConfig       = field(default_factory=ModelConfig)
+    training:     TrainingConfig    = field(default_factory=TrainingConfig)
+    inference:    InferenceConfig   = field(default_factory=InferenceConfig)
+    intervention: InterventionConfig = field(default_factory=InterventionConfig)
+    api:          APIConfig         = field(default_factory=APIConfig)
+
+    def summary(self) -> str:
+        lines = ["LearnFlow Configuration", "═" * 48]
+        for f in fields(self):
+            sub = getattr(self, f.name)
+            lines.append(f"\n  [{f.name.upper()}]")
+            for sf in fields(sub):
+                val = getattr(sub, sf.name)
+                if isinstance(val, (tuple, list)) and len(val) > 4:
+                    val = f"({len(val)} items)"
+                lines.append(f"    {sf.name:<28} = {val}")
+        return "\n".join(lines)
+cfg = LearnFlowConfig()
+if __name__=="__main__":
+    print(cfg.summary())

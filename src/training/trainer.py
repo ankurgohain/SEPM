@@ -1,6 +1,5 @@
 """
 src/training/trainer.py
-========================
 Executable training script for the LearnFlow LSTM model.
 
 Run from project root:
@@ -63,8 +62,7 @@ def _build_and_compile(mc=cfg.model, tc=cfg.training):
         raise ImportError("TensorFlow is required for training.")
 
     # Import here to avoid circular dependency
-    sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-    from lstm_model import build_lstm_model
+    from src.models.lstm import build_lstm_model
 
     model = build_lstm_model(
         seq_len         = cfg.data.seq_len,
@@ -238,11 +236,11 @@ def evaluate(model, X_num, X_cat, y_true, split_name="Test") -> dict:
     print(f"  Mastery Prob      → AUC  : {mastery_auc:.4f}")
     print(f"  Dropout Risk      → AUC  : {dropout_auc:.4f}")
     print(f"\n  Mastery classification report:")
-    print(classification_report(mastery_t, (mastery_p >= 0.5).astype(int),
-                                target_names=["Not Mastered", "Mastered"], indent=4))
+    mastery_report = classification_report(mastery_t, (mastery_p >= 0.5).astype(int), target_names=["Not Mastered", "Mastered"])
+    print("  " + mastery_report.replace("\n", "\n  "))
     print(f"\n  Dropout risk classification report:")
-    print(classification_report(dropout_t, (dropout_p >= 0.5).astype(int),
-                                target_names=["Retained", "At Risk"], indent=4))
+    dropout_report = classification_report(dropout_t, (dropout_p >= 0.5).astype(int), target_names=["Retained", "At Risk"])
+    print("  " + dropout_report.replace("\n", "\n  "))
     print("═" * 54)
 
     return {

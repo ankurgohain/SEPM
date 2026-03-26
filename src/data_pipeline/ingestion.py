@@ -31,7 +31,7 @@ from typing import Generator, Optional
 import numpy as np
 import pandas as pd
 
-from src.data_pipeline.schema import LearnerEvent, LearnerEventBatch, MODULES, MODULE_TO_ID
+from .schema import LearnerEvent, LearnerEventBatch, MODULES, MODULE_TO_ID
 from configs.config import cfg
 
 logger = logging.getLogger("learnflow.ingestion")

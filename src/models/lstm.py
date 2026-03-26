@@ -1,19 +1,14 @@
 """
 lstm_model.py
-=============
-LSTM-based Learner Progression Predictor
-Aligned with patent: "Adaptive Learning System Using LSTM Networks
-for Student Performance and Dropout Risk Prediction"
-
 Architecture
-------------
+
 Input  → Embedding (categorical) + Dense (numerical)
        → Stacked LSTM (2 layers) with dropout
        → Attention mechanism
        → Multi-task output heads:
-           ├─ performance_score   (regression)
-           ├─ mastery_probability (binary classification)
-           └─ dropout_risk        (binary classification)
+           |- performance_score   (regression)
+           |- mastery_probability (binary classification)
+           |- dropout_risk        (binary classification)
 
 Sample dataset: synthetically generated learner interaction sequences
 covering quiz scores, engagement rate, hint usage, badge events, and

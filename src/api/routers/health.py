@@ -1,8 +1,8 @@
 from __future__ import annotations
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
-from src.api.model_registry import ModelRegistry, get_registry
-from src.api.schemas import HealthResponse
+from ..model_registry import ModelRegistry, get_registry
+from schemas import HealthResponse
 router = APIRouter(tags=["Health"])
 
 @router.get(

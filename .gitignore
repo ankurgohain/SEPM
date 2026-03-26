@@ -1,2 +1,10 @@
 venv/
 src/api/__pycache__/
+src/data_pipeline/__pycache__/
+src/training/__pycache__/
+src/models/__pycache__/
+src/utils/__pycache__/
+*.pyc
+__pycache__/
+logs/
+artifacts
