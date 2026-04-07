@@ -28,19 +28,12 @@ from starlette.types import ASGIApp
 
 logger = logging.getLogger("learnflow.middleware")
 
-# ─────────────────────────────────────────────────────────────────────────────
 # CONFIG (read from env at import time)
-# ─────────────────────────────────────────────────────────────────────────────
+API_KEY = os.getenv("LEARNFLOW_API_KEY", "dev-insecure-key-change-me")
+RATE_LIMIT_RPM = int(os.getenv("RATE_LIMIT_RPM", "60"))
+RATE_LIMIT_WINDOW = 60.0                                     
 
-API_KEY           = os.getenv("LEARNFLOW_API_KEY", "dev-insecure-key-change-me")
-RATE_LIMIT_RPM    = int(os.getenv("RATE_LIMIT_RPM", "60"))       # requests per minute
-RATE_LIMIT_WINDOW = 60.0                                           # seconds
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# 1. REQUEST LOGGING
-# ─────────────────────────────────────────────────────────────────────────────
-
+# REQUEST LOGGING
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
     """
     Emits one structured log line per request containing:

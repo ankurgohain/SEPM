@@ -2,11 +2,11 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
 from ..model_registry import ModelRegistry, get_registry
-from schemas import HealthResponse
+from ..schemas import HealthResponse
 router = APIRouter(tags=["Health"])
 
 @router.get(
-    "/health," ,
+    "/health",
     response_model = HealthResponse,
     summary = "Livenes + Readiness checker",
     description = (
@@ -19,7 +19,7 @@ router = APIRouter(tags=["Health"])
 async def health_check(registry:ModelRegistry = Depends(get_registry))-> JSONResponse:
     if not registry.is_loaded:
         return JSONResponse(status_code = status.HTTP_503_SERVICE_UNAVAILABLE,
-                            contetn={
+                            content={
                                 "status": 'unavailable',
                                 "model_loaded": "unloaded",
                                 "uptime": 0.0,

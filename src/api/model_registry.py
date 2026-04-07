@@ -243,7 +243,7 @@ class ModelRegistry:
         if dropout > 0.40:
             return "SEND_MOTIVATIONAL_NUDGE"
         if mastery > 0.75:
-            return "AWARD_BADGE_AND_ADVANCE"
+            return "AWARD_BADGE"
         return "CONTINUE_STANDARD_PATH"
 
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 import json
+import os
 import numpy as np 
 import pytest
 from fastapi.testclient import TestClient
@@ -9,7 +10,7 @@ from src.api.main import app
 from src.api.model_registry import ModelRegistry, get_registry
 from src.api.schemas import InterventionType, DropoutTier
 
-API_KEY = "dev-key"
+API_KEY = os.getenv("LEARNFLOW_API_KEY", "dev-insecure-key-change-me")
 AUTH = {"Authorization": f"Bearer {API_KEY}"}
 
 GOOD_SESSION = {
@@ -43,11 +44,11 @@ class StubRegistry(ModelRegistry):
         dummy = np.array([[0,0,0,1,0,0],[100,1,10,240,50,50,]], dtype = np.float32)
         self._scaler = MinMaxScaler().fit(dummy)
 
-    def predict(self, num_sequence, cat_sequence, return_attention = False):
-        B= num_sequence.shape[0]
+    def predict(self, num_sequences, cat_sequences, return_attention = False):
+        B= num_sequences.shape[0]
         results = []
         for i in range(B):
-            nonzero = num_sequence[i][num_sequence[i, :, 0] > 0]
+            nonzero = num_sequences[i][num_sequences[i, :, 0] > 0]
             raw_score = float(nonzero[-1, 0]) if len(nonzero) else 0.5
 
             perf = float(np.clip(raw_score*100, 0,  100))
@@ -58,7 +59,7 @@ class StubRegistry(ModelRegistry):
 
             results.append({
                 "performance_score": perf,
-                "mastery_probability": mastery,
+                "mastery_prob": mastery,
                 "dropout_risk": dropout,
                 "dropout_tier": tier,
                 "intervention": intervention,
@@ -66,7 +67,7 @@ class StubRegistry(ModelRegistry):
             })
         return results
     
-@pytest.fixtures(scope ="module")
+@pytest.fixture(scope="module")
 def client():
     stub = StubRegistry()
 
@@ -94,8 +95,8 @@ class TestAuth:
         r = client.post('/predict/learner', json={'learner_id': 'u1', 'sessions': [GOOD_SESSION]})
         assert r.status_code == 401
 
-    def test_wrong_toekn(self, client):
-        r = client.post('/predict/leaner', json = {'learner_id': 'u1', 'sessions':[GOOD_SESSION]}, headers = {'Authorization': "Bearer wrong-ley"},)
+    def test_wrong_token(self, client):
+        r = client.post('/predict/learner', json = {'learner_id': 'u1', 'sessions':[GOOD_SESSION]}, headers = {'Authorization': "Bearer wrong-ley"},)
         assert r.status_code == 401
     
     def test_valid_token(self, client):

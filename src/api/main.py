@@ -10,11 +10,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 
-# TO add these files in src/api folder
-from middleware import ( APIKeyMiddleware, RateLimitMiddleware, RequestLoggingMiddleware)
-from model_registry import get_registry
-from routers import health, intervention, predict
-from websocket_handler import router as ws_router
+# Local imports must be package-relative so this module can be imported as `src.api.main`.
+from .middleware import APIKeyMiddleware, RateLimitMiddleware, RequestLoggingMiddleware
+from .model_registry import get_registry
+from .routers import health, intervention, predict
+from .websocket_handler import router as ws_router
 
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO").upper(),
@@ -53,10 +53,10 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins = os.getenv("CORS_ORIGINS:", "*").split(","),
+    allow_origins = os.getenv("CORS_ORIGINS", "*").split(","),
     allow_credentials = True,
     allow_methods = ["*"],
-    allow_header = ["*"]
+    allow_headers = ["*"]
 )
 
 app.add_middleware(RequestLoggingMiddleware)

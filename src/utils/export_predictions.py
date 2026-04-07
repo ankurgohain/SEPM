@@ -41,9 +41,9 @@ from typing import Optional
 
 import numpy as np
 
-from configs.config import cfg
-from src.api.model_registry import ModelRegistry
-from src.data_pipeline.sequencer import Sequencer
+from config import cfg
+from api.model_registry import ModelRegistry
+from data_pipeline.sequencer import Sequencer
 
 logger = logging.getLogger("learnflow.export_predictions")
 
@@ -79,8 +79,7 @@ def _resolve_intervention(performance: float, mastery: float, dropout_risk: floa
 def export_predictions(
     output_path: Path,
     data_split: str = "test",
-    checkpoint_path: Optional[Path] = None,
-) -> dict:
+    checkpoint_path: Optional[Path] = None) -> dict:
     """
     Load model, run predictions on a data split, and export to JSON.
 

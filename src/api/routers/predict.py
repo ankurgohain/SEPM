@@ -19,7 +19,7 @@ def _sessions_to_arrays( request: PredictRequest) ->tuple[np.ndarray, np.ndarray
     cat_raw = np.zeros((SEQ_LEN,), dtype=np.int32)
     offset = SEQ_LEN -T 
     for i,s in enumerate(sessions):
-        idx = offset +1
+        idx = offset + i
         num_raw[idx] = [s.quiz_score, s.engagement_rate, s.hint_count, s.session_duration, s.correct_attempts, s.incorrect_attempts]
         cat_raw[idx] = int(s.module_id)
     return num_raw, cat_raw
