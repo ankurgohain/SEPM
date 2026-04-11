@@ -96,7 +96,7 @@ class TestAuth:
         assert r.status_code == 401
 
     def test_wrong_token(self, client):
-        r = client.post('/predict/learner', json = {'learner_id': 'u1', 'sessions':[GOOD_SESSION]}, headers = {'Authorization': "Bearer wrong-ley"},)
+        r = client.post('/predict/learner', json = {'learner_id': 'u1', 'sessions':[GOOD_SESSION]}, headers = {'Authorization': "Bearer wrong-key"},)
         assert r.status_code == 401
     
     def test_valid_token(self, client):

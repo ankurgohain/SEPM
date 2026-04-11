@@ -1,0 +1,19 @@
+{
+    "version": "0.1.0",
+    "configurations":[
+        {
+            "name": "LearnFLow",
+            "type": "python",
+            "request": "launch",
+            "module": "uvicorn",
+            "args": [
+            "src.api.main:app",
+            "--reload"],
+            "cwd": "${workspaceFolder}",
+            "env": {
+            "PYTHONPATH": "${workspaceFolder}"},
+            "justMyCode": true
+        }
+    ]
+}
+

@@ -7,7 +7,7 @@ from ..model_registry import ModelRegistry, get_registry
 from ..schemas import (AttentionWeights, BatchPredictRequest, BatchPredictResponse, InterventionType, PredictRequest, PredictResponse)
 
 logger = logging.getLogger("learnflow.routes.predict")
-router = APIRouter(prefix="/predict", tags=["Prediction"])
+router = APIRouter(prefix="/predict", tags=["predict"])
 SEQ_LEN = 10
 NUM_FEATURES=6
 NUM_MODULES=6

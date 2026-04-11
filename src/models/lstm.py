@@ -43,21 +43,21 @@ class LearnerDataGenerator:
     Features per timestep
     ---------------------
     Numerical (6):
-        quiz_score        – 0..100, raw quiz score
-        engagement_rate   – 0..1,   fraction of session time spent on-task
-        hint_count        – 0..10,  number of hints requested
-        session_duration  – minutes spent in session (5..120)
-        correct_attempts  – 0..20,  number of correct problem attempts
-        incorrect_attempts– 0..20,  number of incorrect problem attempts
+        quiz_score        - 0..100, raw quiz score
+        engagement_rate   - 0..1,   fraction of session time spent on-task
+        hint_count        - 0..10,  number of hints requested
+        session_duration  - minutes spent in session (5..120)
+        correct_attempts  - 0..20,  number of correct problem attempts
+        incorrect_attempts- 0..20,  number of incorrect problem attempts
 
     Categorical (1):
-        module_id         – one of 6 course modules (encoded as int)
+        module_id         - one of 6 course modules (encoded as int)
 
     Targets (per learner, predicted at sequence end)
     ------------------------------------------------
-        performance_score   – float  [0, 100]
-        mastery_achieved    – binary {0, 1}
-        dropout_risk        – binary {0, 1}
+        performance_score   - float  [0, 100]
+        mastery_achieved    - binary {0, 1}
+        dropout_risk        - binary {0, 1}
     """
 
     MODULES = ["python_basics", "data_structures", "ml_fundamentals",
@@ -79,9 +79,9 @@ class LearnerDataGenerator:
         """
         Returns
         -------
-        X_num   : (n_learners, seq_len, 6)  – numerical features, scaled [0,1]
-        X_cat   : (n_learners, seq_len, 1)  – module_id integers
-        y       : (n_learners, 3)           – [performance, mastery, dropout]
+        X_num   : (n_learners, seq_len, 6)  - numerical features, scaled [0,1]
+        X_cat   : (n_learners, seq_len, 1)  - module_id integers
+        y       : (n_learners, 3)           - [performance, mastery, dropout]
         raw_df  : flat DataFrame of all events (for inspection)
         """
         records = []
@@ -154,7 +154,7 @@ class LearnerDataGenerator:
 # ─────────────────────────────────────────────────────────────────────────────
 # 2. ATTENTION LAYER
 # ─────────────────────────────────────────────────────────────────────────────
-
+@keras.savings.register_keras_serializable(package="Custom", name="BahdanauAttention")
 class BahdanauAttention(layers.Layer):
     """
     Additive (Bahdanau) attention over LSTM hidden states.

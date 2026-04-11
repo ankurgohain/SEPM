@@ -1,0 +1,253 @@
+:root {
+  --ink: #0f172a;
+  --muted: #516079;
+  --paper: #f6f9ff;
+  --card: rgba(255, 255, 255, 0.78);
+  --edge: rgba(15, 23, 42, 0.13);
+  --accent: #e95a2f;
+  --accent-2: #0ea5a3;
+  --ok: #0f9d58;
+  --err: #c81e1e;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Space Grotesk", sans-serif;
+  color: var(--ink);
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 10% 10%, #ffd8b3 0%, transparent 38%),
+    radial-gradient(circle at 90% 0%, #b6f5ef 0%, transparent 33%),
+    linear-gradient(160deg, #f7fbff 0%, #edf4ff 45%, #effaf7 100%);
+}
+
+.bg-orb {
+  position: fixed;
+  filter: blur(70px);
+  border-radius: 999px;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.bg-orb-a {
+  width: 270px;
+  height: 270px;
+  background: rgba(233, 90, 47, 0.25);
+  top: 60px;
+  right: -40px;
+}
+
+.bg-orb-b {
+  width: 320px;
+  height: 320px;
+  background: rgba(14, 165, 163, 0.22);
+  bottom: -40px;
+  left: -60px;
+}
+
+.shell {
+  position: relative;
+  z-index: 1;
+  max-width: 1120px;
+  margin: 22px auto;
+  padding: 10px;
+  display: grid;
+  gap: 14px;
+}
+
+.panel {
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--edge);
+  border-radius: 18px;
+  background: var(--card);
+  padding: 16px;
+  box-shadow: 0 10px 24px rgba(13, 26, 48, 0.06);
+}
+
+.hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 14px;
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--accent);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+h1, h2 {
+  margin: 0 0 8px;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--muted);
+}
+
+.hero-stats {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.9rem;
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(15, 23, 42, 0.9);
+  color: #fff;
+  min-width: 170px;
+  text-align: center;
+}
+
+.grid {
+  display: grid;
+  gap: 10px;
+}
+
+.grid.two {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.grid.three {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+input,
+textarea,
+select,
+button {
+  font: inherit;
+}
+
+input,
+textarea,
+select {
+  border-radius: 10px;
+  border: 1px solid rgba(81, 96, 121, 0.34);
+  padding: 10px;
+  background: #fff;
+}
+
+textarea {
+  width: 100%;
+  resize: vertical;
+  font-family: "IBM Plex Mono", monospace;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 22px;
+}
+
+.actions {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+button {
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 14px;
+  background: linear-gradient(120deg, var(--accent), #f27143);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button.ghost {
+  background: #fff;
+  border: 1px solid rgba(81, 96, 121, 0.4);
+  color: var(--ink);
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+th,
+td {
+  border-bottom: 1px solid rgba(81, 96, 121, 0.2);
+  padding: 6px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+td input,
+td select {
+  width: 100%;
+  min-width: 88px;
+  padding: 7px;
+}
+
+.output {
+  margin-top: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(81, 96, 121, 0.22);
+  background: rgba(255, 255, 255, 0.86);
+  padding: 10px;
+  min-height: 56px;
+  max-height: 300px;
+  overflow: auto;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.85rem;
+}
+
+.ok {
+  border-color: rgba(15, 157, 88, 0.35);
+}
+
+.err {
+  border-color: rgba(200, 30, 30, 0.35);
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(9px);
+  animation: rise 0.45s ease-out forwards;
+}
+
+.reveal:nth-child(2) { animation-delay: 0.06s; }
+.reveal:nth-child(3) { animation-delay: 0.12s; }
+.reveal:nth-child(4) { animation-delay: 0.18s; }
+
+@keyframes rise {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 720px) {
+  .hero {
+    flex-direction: column;
+  }
+
+  .hero-stats {
+    width: 100%;
+  }
+}

@@ -1,16 +1,16 @@
 from __future__ import annotations
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
-from ..model_registry import ModelRegistry, get_registry
-from ..schemas import HealthResponse
-router = APIRouter(tags=["Health"])
+from src.api.model_registry import ModelRegistry, get_registry
+from src.api.schemas import HealthResponse
+router = APIRouter(tags=["health"])
 
 @router.get(
     "/health",
     response_model = HealthResponse,
     summary = "Livenes + Readiness checker",
     description = (
-        "Returns 'status=ok' and model metadat when service == healthy"
+        "Returns 'status=ok' and model metadata when service == healthy"
         "Kubernetes livenesss and readiness probe should target this EP"
         
     ),

@@ -10,7 +10,7 @@ from src.api.model_registry import ModelRegistry, get_registry
 from src.api.schemas import ( INTERVENTION_DESCRIPTIONS, InterventionDetail, InterventionType, PredictRequest)
 
 logger = logging.getLogger("learnflow.routers.intervention")
-router = APIRouter(prefix="/intervention", tags=["Intervention"])
+router = APIRouter(prefix="/intervention", tags=["intervention"])
 
 _prediction_cache: dict[str, dict] = {}
 _acknowledged:     set[str]        = set()

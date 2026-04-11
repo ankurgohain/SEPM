@@ -171,7 +171,7 @@ class APIConfig:
     reload: bool=_env("API_RELOAD",False,bool)
     workers: int = _env("API_WORKERS",1,int)
     log_level: str=_env("LOG_LEVEL","INFO",str)
-    api_key: str=_env("LEARNFLOW_API_KEY", "dev-key", str)
+    api_key: str=_env("LEARNFLOW_API_KEY", "dev-insecure-key-change-me", str)
     rate_limit_rpm:int= _env("RATE_LIMIT_RPM", 60, int)
     cors_original: str=_env("CORS_ORIGINS", "*", str)
     

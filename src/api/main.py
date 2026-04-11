@@ -4,17 +4,16 @@ import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import AsyncGenerator
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 
 # Local imports must be package-relative so this module can be imported as `src.api.main`.
-from .middleware import APIKeyMiddleware, RateLimitMiddleware, RequestLoggingMiddleware
-from .model_registry import get_registry
-from .routers import health, intervention, predict
-from .websocket_handler import router as ws_router
+from src.api.middleware import APIKeyMiddleware, RateLimitMiddleware, RequestLoggingMiddleware
+from src.api.model_registry import get_registry
+from src.api.routers import health, intervention, predict
+from src.api.websocket_handler import router as ws_router
 
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO").upper(),
@@ -22,6 +21,7 @@ logging.basicConfig(
     datefmt="%Y-%m-%dT%H:%M:%S",
 )
 logger = logging.getLogger("learnflow.main")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI)->AsyncGenerator:
@@ -50,10 +50,15 @@ app = FastAPI(
     redoc_url ="/redoc",
     lifespan = lifespan,
 )
+origins = [
+    "http://localhost:5500",
+    "http://q27.0.0.1:5500",
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins = os.getenv("CORS_ORIGINS", "*").split(","),
+    # allow_origins = os.getenv("CORS_ORIGINS", "*").split(","),
+    allow_origins = origins,
     allow_credentials = True,
     allow_methods = ["*"],
     allow_headers = ["*"]
@@ -88,3 +93,10 @@ async def root():
         "docs": "/docs",
         "health": "/health",
     })
+
+@app.get("/")
+def root():
+    return {"message": "API running with CORS"}
+@app.get("/api/data")
+def read_data():
+    return {"data": "Frontend and backend connected"}

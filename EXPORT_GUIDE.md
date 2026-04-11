@@ -62,16 +62,16 @@ The JSON file contains:
 
 ## Fields Explained
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `learner_id` | string | Unique identifier (format: L_{split}_{index}) |
-| `split` | string | Data split (train/val/test) |
-| `performance_score` | float (0-100) | Predicted quiz performance |
-| `mastery_prob` | float (0-1) | Probability of concept mastery |
-| `dropout_risk` | float (0-1) | Probability of dropout |
-| `dropout_tier` | string | Risk category (low/medium/high) |
-| `intervention` | string | Recommended action |
-| `num_sessions` | int | Number of active sessions in sequence |
+| Field               | Type          | Description                                
++---------------------+---------------+----------------------------------------------+
+| `learner_id`        | string        | Unique identifier (format: L_{split}_{index}) 
+| `split`             | string        | Data split (train/val/test) 
+| `performance_score` | float (0-100) | Predicted quiz performance 
+| `mastery_prob`      | float (0-1)   | Probability of concept mastery 
+| `dropout_risk`      | float (0-1)   | Probability of dropout 
+| `dropout_tier`      | string        | Risk category (low/medium/high) 
+| `intervention`      | string        | Recommended action 
+| `num_sessions`      | int           | Number of active sessions in sequence 
 
 ## Intervention Types
 

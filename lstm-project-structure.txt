@@ -1,0 +1,53 @@
+lstm-learner-progression
+|
+|-configs
+   |- config.py
+|-dashboard
+   |-index.html
+   |-app.js
+   |-styles.css
+
+|-data
+   |-processed
+   |-raw
+   |-sample
+   |-sequence
+|-deployement
+|-models
+   |-checkpoints
+   |-saved_models
+|-notebooks
+|-src
+  |-api
+    |-routers
+	|health.py
+	|intervention.py
+	|predict.py
+      |main.py
+      |middleware.py
+      |model_registry.py
+      |schemas.py
+      |websocket_handler.py
+  |-data_pipeline
+     |cleaner.py
+     |feature_engineering.py
+     |ingestion.py
+     |schema.py
+     |sequencer.py
+  |-inference
+  |-intervention
+  |-models
+    |-checkpoints
+    |-saved_models
+  |-training
+     |evaluator.py
+     |hyperparams.py
+     |loss_function.py
+     |trainer.py
+  |-utils
+|-tests
+   |test_api.py
+|.gitignore
+|README.md
+|requirements.txt
+|lstm-project-structure.txt
