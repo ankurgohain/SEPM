@@ -26,6 +26,7 @@ logger = logging.getLogger("learnflow.registry")
 try:
     import tensorflow as tf
     from keras._tf_keras import keras
+    from src.models.lstm import BahdanauAttention
     _TF_AVAILABLE = True
 except ImportError:
     _TF_AVAILABLE = False
@@ -113,8 +114,16 @@ class ModelRegistry:
 
         if _TF_AVAILABLE and cp.exists():
             logger.info("Loading Keras model from %s …", cp)
-            self._model = keras.models.load_model(str(cp))
-            self._version = "1.0.0"
+            try:
+                self._model = keras.models.load_model(
+                    str(cp),
+                    custom_objects={"BahdanauAttention": BahdanauAttention},
+                )
+                self._version = "1.0.0"
+            except Exception:
+                logger.exception("Model deserialization failed — falling back to stub model.")
+                self._model = _StubModel()
+                self._version = _StubModel.version
         else:
             logger.warning("Checkpoint not found at %s — using stub.", cp)
             self._model = _StubModel()

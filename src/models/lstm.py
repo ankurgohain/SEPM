@@ -25,6 +25,11 @@ from keras._tf_keras import keras
 from keras import layers, Model, callbacks
 import warnings
 
+try:
+    register_keras_serializable = keras.saving.register_keras_serializable
+except AttributeError:
+    register_keras_serializable = keras.utils.register_keras_serializable
+
 warnings.filterwarnings("ignore")
 np.random.seed(42)
 tf.random.set_seed(42)
@@ -154,7 +159,7 @@ class LearnerDataGenerator:
 # ─────────────────────────────────────────────────────────────────────────────
 # 2. ATTENTION LAYER
 # ─────────────────────────────────────────────────────────────────────────────
-@keras.savings.register_keras_serializable(package="Custom", name="BahdanauAttention")
+@register_keras_serializable(package="Custom", name="BahdanauAttention")
 class BahdanauAttention(layers.Layer):
     """
     Additive (Bahdanau) attention over LSTM hidden states.
@@ -169,6 +174,7 @@ class BahdanauAttention(layers.Layer):
 
     def __init__(self, units: int = 64, **kwargs):
         super().__init__(**kwargs)
+        self.units = units
         self.W = layers.Dense(units, use_bias=False)
         self.V = layers.Dense(1,     use_bias=False)
 
@@ -178,6 +184,15 @@ class BahdanauAttention(layers.Layer):
         weights = tf.nn.softmax(score, axis=1)               # (batch, T, 1)
         context = tf.reduce_sum(weights * encoder_outputs, axis=1)  # (batch, hidden_dim)
         return context, tf.squeeze(weights, axis=-1)          # (batch, T)
+
+    def get_config(self):
+        config = super().get_config()
+        config.update({"units": self.units})
+        return config
+
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)
 
 
 # ─────────────────────────────────────────────────────────────────────────────

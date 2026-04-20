@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LearnFlow — Adaptive LMS</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #11141a;
+    --surface2: #181c24;
+    --border: #1e2330;
+    --border2: #252b3a;
+    --accent: #4f8ef7;
+    --accent2: #7c5cfc;
+    --green: #22d98a;
+    --amber: #f5a623;
+    --red: #f05252;
+    --teal: #14b8c4;
+    --text: #e8ecf4;
+    --text2: #8892a8;
+    --text3: #4a5168;
+    --font-head: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+    --radius: 10px;
+    --radius-lg: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 14px; }
+  body { font-family: var(--font-body); background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+  .app { display: grid; grid-template-columns: 220px 1fr; grid-template-rows: 52px 1fr; min-height: 100vh; }
+
+  .topbar {
+    grid-column: 1 / -1;
+    display: flex; align-items: center; gap: 16px;
+    padding: 0 20px; background: var(--surface); border-bottom: 1px solid var(--border); z-index: 10;
+  }
+  .topbar-logo { font-family: var(--font-head); font-size: 18px; font-weight: 800; letter-spacing: -.5px; color: var(--text); white-space: nowrap; }
+  .topbar-logo span { color: var(--accent); }
+  .topbar-pill { background: rgba(79,142,247,.12); color: var(--accent); font-family: var(--font-mono); font-size: 10px; font-weight: 500; padding: 3px 8px; border-radius: 20px; border: 1px solid rgba(79,142,247,.25); white-space: nowrap; }
+  .topbar-status { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text2); white-space: nowrap; }
+  .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse-dot 2s ease-in-out infinite; }
+  @keyframes pulse-dot { 0%,100%{box-shadow:0 0 0 0 rgba(34,217,138,.4)} 50%{box-shadow:0 0 0 5px rgba(34,217,138,0)} }
+  .ticker-wrap { overflow: hidden; flex: 1; min-width: 0; }
+  .ticker { display: flex; gap: 24px; animation: ticker-anim 30s linear infinite; white-space: nowrap; }
+  .ticker-item { font-family: var(--font-mono); font-size: 11px; color: var(--text2); }
+  .ticker-item b { color: var(--accent); }
+  @keyframes ticker-anim { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+
+  .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 16px 10px; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
+  .sidebar-section { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--text3); padding: 12px 10px 6px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; font-size: 13px; font-weight: 400; color: var(--text2); cursor: pointer; transition: all .15s; }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: rgba(79,142,247,.1); color: var(--accent); font-weight: 500; }
+  .nav-item .icon { font-size: 15px; width: 20px; text-align: center; }
+  .nav-badge { margin-left: auto; background: var(--red); color: #fff; font-family: var(--font-mono); font-size: 9px; padding: 1px 5px; border-radius: 8px; }
+
+  .main { overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .page-title { font-family: var(--font-head); font-size: 20px; font-weight: 800; letter-spacing: -.5px; }
+  .page-subtitle { font-size: 12px; color: var(--text2); margin-top: 3px; }
+  .header-controls { display: flex; gap: 8px; align-items: center; }
+  .btn { padding: 7px 14px; border-radius: 8px; font-family: var(--font-body); font-size: 12px; font-weight: 500; cursor: pointer; border: none; transition: all .15s; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border2); color: var(--text2); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #6fa0f8; }
+
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; position: relative; overflow: hidden; }
+  .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--card-accent, var(--accent)); }
+  .stat-label { font-size: 10px; color: var(--text2); font-weight: 500; letter-spacing: .04em; text-transform: uppercase; margin-bottom: 6px; }
+  .stat-val { font-family: var(--font-head); font-size: 26px; font-weight: 800; letter-spacing: -1px; }
+  .stat-delta { font-size: 11px; margin-top: 3px; color: var(--text2); }
+  .stat-delta.up { color: var(--green); }
+  .stat-delta.down { color: var(--red); }
+  .stat-icon { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 26px; opacity: .1; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 360px; gap: 14px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+  .card-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .card-title { font-family: var(--font-head); font-size: 13px; font-weight: 700; }
+  .card-badge { font-size: 10px; font-family: var(--font-mono); padding: 2px 8px; border-radius: 20px; }
+  .badge-green { background: rgba(34,217,138,.12); color: var(--green); border: 1px solid rgba(34,217,138,.2); }
+  .badge-amber { background: rgba(245,166,35,.12); color: var(--amber); border: 1px solid rgba(245,166,35,.2); }
+  .badge-blue  { background: rgba(79,142,247,.12);  color: var(--accent); border: 1px solid rgba(79,142,247,.2); }
+  .badge-red   { background: rgba(240,82,82,.12);   color: var(--red);  border: 1px solid rgba(240,82,82,.2); }
+  .badge-multi { display: flex; gap: 4px; }
+
+  .learner-table { width: 100%; border-collapse: collapse; }
+  .learner-table th { text-align: left; font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--text3); padding: 8px 14px; border-bottom: 1px solid var(--border); }
+  .learner-table td { padding: 9px 14px; font-size: 12px; border-bottom: 1px solid rgba(30,35,48,.5); vertical-align: middle; }
+  .learner-table tr:last-child td { border-bottom: none; }
+  .learner-table tr:hover td { background: rgba(255,255,255,.015); }
+
+  .avatar { width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .learner-name { display: flex; align-items: center; gap: 8px; }
+  .learner-info span:first-child { font-weight: 500; color: var(--text); display: block; }
+  .learner-info span:last-child { font-size: 10px; color: var(--text2); display: block; }
+  .progress-bar-wrap { width: 70px; background: var(--border); border-radius: 4px; height: 4px; }
+  .progress-bar { height: 4px; border-radius: 4px; transition: width .6s ease; }
+  .risk-pill { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 600; font-family: var(--font-mono); padding: 2px 7px; border-radius: 20px; }
+  .risk-low  { background: rgba(34,217,138,.1);  color: var(--green); }
+  .risk-med  { background: rgba(245,166,35,.1);   color: var(--amber); }
+  .risk-high { background: rgba(240,82,82,.1);    color: var(--red);   }
+  .risk-dot  { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+  .mini-bars { display: flex; gap: 2px; align-items: flex-end; height: 22px; }
+  .mini-bar { width: 4px; border-radius: 2px; transition: height .4s ease; }
+
+  .lstm-panel { display: flex; flex-direction: column; }
+  .lstm-learner { padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; cursor: pointer; transition: background .12s; }
+  .lstm-learner:hover { background: rgba(255,255,255,.02); }
+  .lstm-learner.selected { background: rgba(79,142,247,.06); border-left: 2px solid var(--accent); padding-left: 12px; }
+  .lstm-learner:last-child { border-bottom: none; }
+
+  .event-stream { padding: 10px; display: flex; flex-direction: column; gap: 5px; max-height: 320px; overflow-y: auto; }
+  .event-item { display: flex; align-items: flex-start; gap: 8px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface2); animation: slide-in .3s ease; font-size: 11px; }
+  @keyframes slide-in { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
+  .event-dot { width: 6px; height: 6px; border-radius: 50%; margin-top: 3px; flex-shrink: 0; }
+  .event-meta { flex: 1; }
+  .event-user { font-weight: 600; color: var(--text); }
+  .event-desc { color: var(--text2); margin-top: 1px; }
+  .event-time { font-family: var(--font-mono); font-size: 10px; color: var(--text3); white-space: nowrap; }
+  .event-score { font-family: var(--font-mono); font-size: 10px; font-weight: 500; padding: 2px 6px; border-radius: 6px; align-self: flex-start; background: rgba(79,142,247,.1); color: var(--accent); }
+
+  .prediction-section { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+  .pred-title { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--text3); margin-bottom: 8px; }
+  .pred-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .pred-label { font-size: 11px; color: var(--text2); }
+  .pred-val { font-family: var(--font-mono); font-size: 11px; font-weight: 500; }
+  .pred-gauge { height: 3px; background: var(--border); border-radius: 3px; margin-top: 2px; overflow: hidden; }
+  .pred-gauge-fill { height: 100%; border-radius: 3px; transition: width .8s cubic-bezier(.34,1.56,.64,1); }
+
+  .bottom-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .heatmap-grid { display: grid; grid-template-columns: repeat(24, 1fr); gap: 3px; padding: 12px 14px; }
+  .heat-cell { aspect-ratio: 1; border-radius: 2px; transition: background .5s ease; }
+  .heatmap-labels { display: flex; justify-content: space-between; padding: 0 14px 10px; font-size: 10px; color: var(--text3); font-family: var(--font-mono); }
+  .lb-item { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-bottom: 1px solid rgba(30,35,48,.5); }
+  .lb-item:last-child { border-bottom: none; }
+  .lb-rank { font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--text3); width: 18px; }
+  .lb-rank.gold { color: #f5c842; } .lb-rank.silver { color: #9ba8be; } .lb-rank.bronze { color: #c87941; }
+  .lb-pts { font-family: var(--font-mono); font-size: 11px; margin-left: auto; color: var(--accent); font-weight: 500; }
+  .lb-delta { font-size: 10px; margin-left: 4px; }
+  .lb-delta.up { color: var(--green); } .lb-delta.dn { color: var(--red); }
+  .alert-item { display: flex; gap: 8px; padding: 10px 12px; border-bottom: 1px solid rgba(30,35,48,.4); align-items: flex-start; }
+  .alert-item:last-child { border-bottom: none; }
+  .alert-icon { font-size: 13px; margin-top: 1px; }
+  .alert-title { font-size: 12px; font-weight: 600; color: var(--text); }
+  .alert-sub { font-size: 10px; color: var(--text2); margin-top: 2px; }
+  .alert-time { font-family: var(--font-mono); font-size: 10px; color: var(--text3); white-space: nowrap; }
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+  .sparkline-svg { width: 100%; height: 36px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="topbar-logo">Learn<span>Flow</span></div>
+    <div class="topbar-pill">LSTM v2.1 live</div>
+    <div class="ticker-wrap">
+      <div class="ticker" id="ticker">
+        <span class="ticker-item">🎯 <b>Arjun</b> completed Module 4 &nbsp;·&nbsp;</span>
+        <span class="ticker-item">⚠️ <b>Sofia</b> dropout risk rising &nbsp;·&nbsp;</span>
+        <span class="ticker-item">🏆 <b>Marcus</b> earned "Speed Learner" badge &nbsp;·&nbsp;</span>
+        <span class="ticker-item">📈 <b>Priya</b> mastery index 91% &nbsp;·&nbsp;</span>
+        <span class="ticker-item">🔔 LSTM flagged 2 learners for intervention &nbsp;·&nbsp;</span>
+        <span class="ticker-item">🎯 <b>Arjun</b> completed Module 4 &nbsp;·&nbsp;</span>
+        <span class="ticker-item">⚠️ <b>Sofia</b> dropout risk rising &nbsp;·&nbsp;</span>
+        <span class="ticker-item">🏆 <b>Marcus</b> earned "Speed Learner" badge &nbsp;·&nbsp;</span>
+        <span class="ticker-item">📈 <b>Priya</b> mastery index 91% &nbsp;·&nbsp;</span>
+        <span class="ticker-item">🔔 LSTM flagged 2 learners for intervention &nbsp;·&nbsp;</span>
+      </div>
+    </div>
+    <div class="topbar-status">
+      <div class="live-dot"></div>
+      <span id="clock"></span>
+    </div>
+  </header>
+
+  <aside class="sidebar">
+    <div class="sidebar-section">Platform</div>
+    <div class="nav-item active"><span class="icon">⬡</span> Dashboard</div>
+    <div class="nav-item"><span class="icon">◎</span> Learners <span class="nav-badge">3</span></div>
+    <div class="nav-item"><span class="icon">▦</span> Courses</div>
+    <div class="nav-item"><span class="icon">◈</span> Modules</div>
+    <div class="sidebar-section">Analytics</div>
+    <div class="nav-item"><span class="icon">⟁</span> LSTM Predictions</div>
+    <div class="nav-item"><span class="icon">⊕</span> Interventions <span class="nav-badge" id="sb-alert-badge">2</span></div>
+    <div class="nav-item"><span class="icon">⊞</span> Reports</div>
+    <div class="sidebar-section">Config</div>
+    <div class="nav-item"><span class="icon">⊛</span> Thresholds</div>
+    <div class="nav-item"><span class="icon">◉</span> Integrations</div>
+  </aside>
+
+  <main class="main">
+
+    <div class="page-header">
+      <div>
+        <div class="page-title">Learner Analytics Dashboard</div>
+        <div class="page-subtitle">Real-time LSTM-driven progression monitoring · Updated every ~1s</div>
+      </div>
+      <div class="header-controls">
+        <button class="btn btn-ghost" onclick="togglePause()">⏸ <span id="pause-label">Pause</span></button>
+        <button class="btn btn-primary" onclick="triggerIntervention()">⚡ Intervene</button>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card" style="--card-accent:var(--accent)">
+        <div class="stat-label">Active Learners</div>
+        <div class="stat-val" id="stat-active">6</div>
+        <div class="stat-delta up">↑ all online now</div>
+        <div class="stat-icon">👤</div>
+      </div>
+      <div class="stat-card" style="--card-accent:var(--green)">
+        <div class="stat-label">Avg. Mastery Score</div>
+        <div class="stat-val" id="stat-mastery">—</div>
+        <div class="stat-delta up" id="d-mastery">LSTM tracking</div>
+        <div class="stat-icon">🧠</div>
+      </div>
+      <div class="stat-card" style="--card-accent:var(--amber)">
+        <div class="stat-label">Dropout Risk Flags</div>
+        <div class="stat-val" id="stat-risk">—</div>
+        <div class="stat-delta down" id="d-risk">LSTM prediction</div>
+        <div class="stat-icon">⚠️</div>
+      </div>
+      <div class="stat-card" style="--card-accent:var(--accent2)">
+        <div class="stat-label">Events / sec</div>
+        <div class="stat-val" id="stat-eps">—</div>
+        <div class="stat-delta up">Kafka stream OK</div>
+        <div class="stat-icon">⚡</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Learner Progression</div>
+          <div class="badge-multi">
+            <span class="card-badge badge-green" id="online-count">● 6 online</span>
+            <span class="card-badge badge-blue">LSTM scoring</span>
+          </div>
+        </div>
+        <table class="learner-table">
+          <thead>
+            <tr>
+              <th>Learner</th>
+              <th>Course</th>
+              <th>Progress</th>
+              <th>Score</th>
+              <th>Mastery</th>
+              <th>Risk</th>
+              <th>Recent</th>
+            </tr>
+          </thead>
+          <tbody id="learner-tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">LSTM Predictions</div>
+          <span class="card-badge badge-amber" id="pred-badge">Initialising…</span>
+        </div>
+        <div class="lstm-panel" id="lstm-panel"></div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 360px;gap:14px">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Live Event Stream</div>
+          <span class="card-badge badge-blue" id="event-counter">0 events</span>
+        </div>
+        <div class="event-stream" id="event-stream"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title" id="pred-detail-title">Select a learner</div>
+          <span class="card-badge badge-green">LSTM Output</span>
+        </div>
+        <div id="pred-detail-body">
+          <div style="padding:36px 18px;text-align:center;color:var(--text3);font-size:12px">
+            ← Click a learner in the LSTM panel
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-row">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Hourly Activity Heatmap</div>
+          <span class="card-badge badge-blue">Today</span>
+        </div>
+        <div class="heatmap-grid" id="heatmap"></div>
+        <div class="heatmap-labels">
+          <span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>23:00</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Leaderboard</div>
+          <span class="card-badge badge-amber">XP Points</span>
+        </div>
+        <div id="leaderboard"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Intervention Alerts</div>
+          <span class="card-badge badge-red" id="alert-count">2 active</span>
+        </div>
+        <div id="alerts-panel"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+const EVENTS_TYPES = [
+  { type:'quiz',   desc:'submitted quiz',             icon:'📝', color:'var(--accent)' },
+  { type:'video',  desc:'watched lecture video',      icon:'🎬', color:'var(--teal)' },
+  { type:'badge',  desc:'earned a badge 🏅',          icon:'🏅', color:'var(--amber)' },
+  { type:'level',  desc:'advanced to next level',     icon:'⬆️', color:'var(--green)' },
+  { type:'hint',   desc:'used a hint',                icon:'💡', color:'#a78bfa' },
+  { type:'module', desc:'completed a module ✅',      icon:'✅', color:'var(--green)' },
+  { type:'streak', desc:'maintained 7-day streak 🔥', icon:'🔥', color:'#fb7185' },
+  { type:'login',  desc:'started a session',          icon:'👤', color:'var(--text2)' },
+];
+
+const LEARNER_DATA = [
+  { id:1, name:'Arjun Sharma',   initials:'AS', course:'Python Fundamentals', color:'#4f8ef7', xp:3840 },
+  { id:2, name:'Priya Nair',     initials:'PN', course:'ML Basics',           color:'#7c5cfc', xp:4210 },
+  { id:3, name:'Marcus Adeyemi', initials:'MA', course:'Data Structures',     color:'#22d98a', xp:3590 },
+  { id:4, name:'Sofia Reyes',    initials:'SR', course:'Web Dev 101',         color:'#f05252', xp:1820 },
+  { id:5, name:'Yuki Tanaka',    initials:'YT', course:'SQL Mastery',         color:'#f5a623', xp:2970 },
+  { id:6, name:'Lena Müller',    initials:'LM', course:'Python Fundamentals', color:'#14b8c4', xp:3100 },
+];
+
+let paused = false, eventCount = 0, selectedId = null;
+
+const learners = LEARNER_DATA.map(l => ({
+  ...l,
+  progress:  45 + Math.random()*40,
+  score:     55 + Math.random()*35,
+  mastery:   50 + Math.random()*45,
+  riskScore: Math.random(),
+  activity:  Array.from({length:8}, () => Math.random()),
+  history:   Array.from({length:8}, () => 50 + Math.random()*40),
+  pred: {
+    successProb: .55 + Math.random()*.35,
+    masteryProb: .5  + Math.random()*.4,
+    nextScore:   60  + Math.random()*30,
+  },
+}));
+
+let alerts = [
+  { icon:'🚨', title:'High dropout risk — Sofia Reyes',  sub:'LSTM confidence 84% · Last active 3 days ago', time:'2m ago' },
+  { icon:'⚠️', title:'Stagnation detected — Yuki Tanaka', sub:'No progress 48h · Suggest remedial module',   time:'11m ago' },
+];
+
+const heatData = Array.from({length:24}, (_,i) => ({
+  intensity: i<6 ? Math.random()*.2 : i<10 ? .2+Math.random()*.6 : i<14 ? .5+Math.random()*.5 : i<18 ? .4+Math.random()*.5 : .1+Math.random()*.4
+}));
+
+function riskLevel(r) { return r<.35?['low','Low']:r<.65?['med','Med']:['high','High']; }
+function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+function fmt(n,d=0){ return (+n).toFixed(d); }
+function randItem(a){ return a[Math.floor(Math.random()*a.length)]; }
+
+function renderTable() {
+  document.getElementById('learner-tbody').innerHTML = learners.map(l => {
+    const [rl] = riskLevel(l.riskScore);
+    const bars = l.activity.map(v =>
+      `<div class="mini-bar" style="height:${Math.max(3,v*20)}px;background:${l.color};opacity:${.35+v*.65}"></div>`
+    ).join('');
+    return `<tr>
+      <td><div class="learner-name">
+        <div class="avatar" style="background:${l.color}">${l.initials}</div>
+        <div class="learner-info"><span>${l.name}</span><span>● online</span></div>
+      </div></td>
+      <td style="color:var(--text2);font-size:11px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.course}</td>
+      <td><div style="display:flex;align-items:center;gap:5px">
+        <div class="progress-bar-wrap"><div class="progress-bar" style="width:${l.progress}%;background:${l.color}"></div></div>
+        <span style="font-family:var(--font-mono);font-size:10px;color:var(--text2)">${fmt(l.progress)}%</span>
+      </div></td>
+      <td><span style="font-family:var(--font-mono);font-weight:600">${fmt(l.score)}%</span></td>
+      <td><div style="display:flex;align-items:center;gap:5px">
+        <div class="progress-bar-wrap" style="width:54px"><div class="progress-bar" style="width:${l.mastery}%;background:var(--green)"></div></div>
+        <span style="font-family:var(--font-mono);font-size:10px;color:var(--text2)">${fmt(l.mastery)}%</span>
+      </div></td>
+      <td><span class="risk-pill risk-${rl}"><span class="risk-dot"></span>${riskLevel(l.riskScore)[1]}</span></td>
+      <td><div class="mini-bars">${bars}</div></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderLSTMPanel() {
+  document.getElementById('lstm-panel').innerHTML = learners.map(l => {
+    const bars = l.history.slice(-6).map(v =>
+      `<div class="mini-bar" style="height:${Math.max(3,(v-40)/60*22)}px;background:${l.color};opacity:.85"></div>`
+    ).join('');
+    const rc = l.riskScore>.6?'var(--red)':l.riskScore>.35?'var(--amber)':'var(--green)';
+    return `<div class="lstm-learner ${selectedId===l.id?'selected':''}" onclick="selectLearner(${l.id})">
+      <div class="avatar" style="background:${l.color};width:22px;height:22px;font-size:9px">${l.initials}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l.name}</div>
+        <div style="font-size:10px;color:var(--text2);margin-top:1px">▸ ${fmt(l.pred.successProb*100)}% success · <span style="color:${rc}">${fmt(l.riskScore*100)}% risk</span></div>
+      </div>
+      <div class="mini-bars" style="margin-left:6px">${bars}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('pred-badge').textContent = 'Updated ' + new Date().toLocaleTimeString();
+}
+
+function selectLearner(id) {
+  selectedId = id;
+  renderLSTMPanel();
+  const l = learners.find(x=>x.id===id); if (!l) return;
+  document.getElementById('pred-detail-title').textContent = l.name;
+  const rc = l.riskScore>.6?'var(--red)':l.riskScore>.35?'var(--amber)':'var(--green)';
+
+  let intervention, iIcon;
+  if (l.riskScore>.6)      { intervention='Notify instructor + assign remedial module'; iIcon='🚨'; }
+  else if (l.riskScore>.35){ intervention='Scale difficulty + send motivational prompt'; iIcon='💡'; }
+  else                      { intervention='Issue achievement badge + advance module';   iIcon='🏅'; }
+
+  document.getElementById('pred-detail-body').innerHTML = `
+    <div class="prediction-section">
+      <div class="pred-title">LSTM Output Predictions</div>
+      ${pRow('Success probability', l.pred.successProb, l.color)}
+      ${pRow('Dropout risk',        l.riskScore,        rc)}
+      ${pRow('Mastery probability', l.pred.masteryProb, 'var(--teal)')}
+    </div>
+    <div class="prediction-section">
+      <div class="pred-title">Predicted next score</div>
+      <div style="font-family:var(--font-mono);font-size:26px;font-weight:700;color:${l.color};padding:4px 0">${fmt(l.pred.nextScore)}%</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:2px">Based on last 8 interaction sequences</div>
+    </div>
+    <div class="prediction-section">
+      <div class="pred-title">Recommended action</div>
+      <div style="display:flex;gap:8px;padding:8px 10px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
+        <span style="font-size:14px">${iIcon}</span>
+        <span style="font-size:11px;color:${rc};line-height:1.5">${intervention}</span>
+      </div>
+    </div>
+    <div style="padding:10px 14px 12px">
+      <svg class="sparkline-svg" id="spark-svg" viewBox="0 0 200 36" preserveAspectRatio="none"></svg>
+      <div style="font-size:10px;color:var(--text3);margin-top:3px;font-family:var(--font-mono)">Score history · last 8 events</div>
+    </div>
+  `;
+  // Sparkline
+  const data = l.history, mn = Math.min(...data), mx = Math.max(...data);
+  const sy = v => 32 - ((v-mn)/(mx-mn+.01))*28;
+  const pts = data.map((v,i) => `${(i/(data.length-1))*198+1},${sy(v)}`).join(' ');
+  const svg = document.getElementById('spark-svg');
+  if (svg) svg.innerHTML = `<polyline points="${pts}" fill="none" stroke="${l.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>${data.map((v,i)=>`<circle cx="${(i/(data.length-1))*198+1}" cy="${sy(v)}" r="2.5" fill="${l.color}"/>`).join('')}`;
+}
+
+function pRow(label, val, color) {
+  return `<div style="margin-bottom:8px">
+    <div class="pred-row">
+      <span class="pred-label">${label}</span>
+      <span class="pred-val" style="color:${color}">${fmt(val*100,1)}%</span>
+    </div>
+    <div class="pred-gauge"><div class="pred-gauge-fill" style="width:${val*100}%;background:${color}"></div></div>
+  </div>`;
+}
+
+function renderHeatmap() {
+  document.getElementById('heatmap').innerHTML = heatData.map(d =>
+    `<div class="heat-cell" style="background:${d.intensity<.05?'var(--border)':`rgba(79,142,247,${d.intensity*.85})`}"></div>`
+  ).join('');
+}
+
+function renderLeaderboard() {
+  const sorted = [...learners].sort((a,b)=>b.xp-a.xp);
+  document.getElementById('leaderboard').innerHTML = sorted.map((l,i) => {
+    const rankClass = ['gold','silver','bronze'][i] || '';
+    const rankLabel = ['🥇','🥈','🥉'][i] || (i+1);
+    const up = Math.random()>.4;
+    return `<div class="lb-item">
+      <div class="lb-rank ${rankClass}">${rankLabel}</div>
+      <div class="avatar" style="background:${l.color};width:22px;height:22px;font-size:9px">${l.initials}</div>
+      <div>
+        <div style="font-size:12px;font-weight:500;color:var(--text)">${l.name}</div>
+        <div style="font-size:10px;color:var(--text2)">${l.course}</div>
+      </div>
+      <div style="margin-left:auto;text-align:right">
+        <span class="lb-pts">${l.xp.toLocaleString()} XP</span>
+        <span class="lb-delta ${up?'up':'dn'}">${up?'▲':'▼'}${Math.ceil(Math.random()*3)}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderAlerts() {
+  document.getElementById('alerts-panel').innerHTML = alerts.map(a =>
+    `<div class="alert-item">
+      <div class="alert-icon">${a.icon}</div>
+      <div style="flex:1"><div class="alert-title">${a.title}</div><div class="alert-sub">${a.sub}</div></div>
+      <div class="alert-time">${a.time}</div>
+    </div>`
+  ).join('');
+  const n = alerts.length;
+  document.getElementById('alert-count').textContent = n + ' active';
+  document.getElementById('sb-alert-badge').textContent = n;
+}
+
+function addEvent(l, ev, score) {
+  eventCount++;
+  const stream = document.getElementById('event-stream');
+  const div = document.createElement('div');
+  div.className = 'event-item';
+  div.innerHTML = `
+    <div class="event-dot" style="background:${ev.color}"></div>
+    <div class="event-meta">
+      <div><span class="event-user">${l.name}</span></div>
+      <div class="event-desc">${ev.icon} ${ev.desc} — ${l.course}</div>
+    </div>
+    <div class="event-time">${new Date().toLocaleTimeString()}</div>
+    ${score!==undefined?`<span class="event-score">${fmt(score)}%</span>`:''}
+  `;
+  stream.insertBefore(div, stream.firstChild);
+  while (stream.children.length > 20) stream.removeChild(stream.lastChild);
+  document.getElementById('event-counter').textContent = eventCount + ' events';
+}
+
+function tick() {
+  if (paused) return;
+  const l = randItem(learners);
+  const ev = randItem(EVENTS_TYPES);
+  const score = ev.type==='quiz' ? 50+Math.random()*45 : undefined;
+
+  if (ev.type==='quiz')   l.score    = clamp(l.score + (Math.random()-.4)*8, 40, 100);
+  if (ev.type==='module') l.progress = clamp(l.progress + 2 + Math.random()*5, 0, 100);
+  if (ev.type==='video')  l.mastery  = clamp(l.mastery + Math.random()*3, 0, 100);
+  if (ev.type==='badge')  l.xp      += 150 + Math.floor(Math.random()*300);
+
+  l.activity  = [...l.activity.slice(1), Math.random()];
+  l.history   = [...l.history.slice(1), l.score];
+  l.riskScore = clamp(l.riskScore + (Math.random()-.5)*.04, .05, .95);
+  l.pred.successProb = clamp(l.pred.successProb + (Math.random()-.45)*.04, .15, .98);
+  l.pred.masteryProb = clamp(l.mastery/100 + (Math.random()-.5)*.05, .1, .98);
+  l.pred.nextScore   = clamp(l.pred.nextScore + (Math.random()-.4)*4, 40, 100);
+
+  addEvent(l, ev, score);
+  renderTable();
+  renderLSTMPanel();
+  renderLeaderboard();
+
+  if (Math.random()>.65) {
+    const h = new Date().getHours();
+    heatData[h].intensity = clamp(heatData[h].intensity + .06, 0, 1);
+    renderHeatmap();
+  }
+
+  const avg = learners.reduce((s,x)=>s+x.mastery,0)/learners.length;
+  document.getElementById('stat-mastery').textContent = fmt(avg) + '%';
+  document.getElementById('stat-risk').textContent = learners.filter(x=>x.riskScore>.6).length;
+  document.getElementById('stat-eps').textContent = (2.5+Math.random()*3.5).toFixed(1);
+
+  if (selectedId) selectLearner(selectedId);
+}
+
+function togglePause() {
+  paused = !paused;
+  document.getElementById('pause-label').textContent = paused ? 'Resume' : 'Pause';
+}
+
+function triggerIntervention() {
+  const target = learners.sort((a,b)=>b.riskScore-a.riskScore)[0];
+  alerts.unshift({ icon:'⚡', title:`Manual intervention — ${target.name}`, sub:'Instructor notified · Difficulty adjusted · Prompt sent', time:'just now' });
+  if (alerts.length > 6) alerts.pop();
+  renderAlerts();
+}
+
+function updateClock() {
+  document.getElementById('clock').textContent = new Date().toLocaleTimeString();
+}
+
+// Init
+renderTable(); renderLSTMPanel(); renderHeatmap(); renderLeaderboard(); renderAlerts(); updateClock();
+setInterval(updateClock, 1000);
+
+let speed = 1100;
+function loop() { tick(); speed = 800 + Math.random()*800; setTimeout(loop, speed); }
+setTimeout(loop, 600);
+
+// Seed initial events
+setTimeout(()=>addEvent(learners[1], EVENTS_TYPES[0], 88.5), 100);
+setTimeout(()=>addEvent(learners[0], EVENTS_TYPES[2]),        350);
+setTimeout(()=>addEvent(learners[2], EVENTS_TYPES[5]),        600);
+setTimeout(()=>addEvent(learners[4], EVENTS_TYPES[1]),        900);
+</script>
+</body>
+</html>

@@ -35,18 +35,23 @@ function baseUrl() {
   return els.baseUrl.value.trim().replace(/\/$/, "");
 }
 
-function authHeaders() {
-  const h = { "Content-Type": "application/json" };
+function authHeaders({ includeAuth = true, includeJson = true } = {}) {
+  const h = {};
+  if (includeJson) h["Content-Type"] = "application/json";
+
   const token = els.apiKey.value.trim();
-  if (token) h.Authorization = `Bearer ${token}`;
+  if (includeAuth && token) h.Authorization = `Bearer ${token}`;
   return h;
 }
 
 async function api(path, options = {}) {
+  const includeJsonHeader = options.body != null;
+  const includeAuth = options.includeAuth !== false;
+
   const res = await fetch(`${baseUrl()}${path}`, {
     ...options,
     headers: {
-      ...authHeaders(),
+      ...authHeaders({ includeAuth, includeJson: includeJsonHeader }),
       ...(options.headers || {})
     }
   });
@@ -171,11 +176,12 @@ function summarizeBatch(response) {
 
 els.healthBtn.addEventListener("click", async () => {
   try {
-    const data = await api("/health", { method: "GET" });
+    const data = await api("/health", { method: "GET", includeAuth: false });
     print(els.healthOut, data, "ok");
     els.heroStatus.textContent = data.model_loaded ? `API ready (${data.model_version})` : "API unavailable";
   } catch (e) {
-    print(els.healthOut, e.payload || e.message, "err");
+    const fallback = e.payload || e.message || "Network error. Verify base URL, CORS, and API server status.";
+    print(els.healthOut, fallback, "err");
     els.heroStatus.textContent = "API error";
   }
 });

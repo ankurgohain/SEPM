@@ -37,7 +37,7 @@ try:
 except ImportError:
     _TF_AVAILABLE = False
 
-from configs.config import cfg
+from src.configs.config import cfg
 from src.data_pipeline.ingestion import SyntheticIngester, CSVIngester
 from src.data_pipeline.cleaner import EventCleaner
 from src.data_pipeline.feature_engineering import FeatureEngineer

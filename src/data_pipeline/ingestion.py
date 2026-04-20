@@ -32,7 +32,7 @@ import numpy as np
 import pandas as pd
 
 from .schema import LearnerEvent, LearnerEventBatch, MODULES, MODULE_TO_ID
-from configs.config import cfg
+from src.configs.config import cfg
 
 logger = logging.getLogger("learnflow.ingestion")
 

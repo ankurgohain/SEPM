@@ -117,8 +117,12 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         path = request.url.path
 
+        # Preflight CORS requests should never require authentication.
+        if request.method == "OPTIONS":
+            return await call_next(request)
+
         # Allow WebSocket upgrades and open paths unconditionally
-        if any(path.startswith(p) for p in self.OPEN_PATHS):
+        if self._is_open_path(path):
             return await call_next(request)
 
         auth_header = request.headers.get("Authorization", "")
@@ -133,6 +137,13 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
             return self._unauthorised("Invalid API key")
 
         return await call_next(request)
+
+    def _is_open_path(self, path: str) -> bool:
+        if any(path.startswith(p) for p in self.OPEN_PATHS):
+            return True
+
+        # Support deployments mounted under a URL prefix, e.g. /api/health.
+        return any(path.endswith(p) for p in self.OPEN_PATHS)
 
     @staticmethod
     def _safe_compare(a: bytes, b: bytes) -> bool:
